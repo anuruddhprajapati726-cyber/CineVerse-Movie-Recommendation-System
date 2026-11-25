@@ -382,8 +382,9 @@ def load_data_and_model():
 
   if df.empty:
     return df, np.zeros((0, 0), dtype=np.float32)
-
-  tfidf = TfidfVectorizer(stop_words="english", max_features=2000)
+  
+  df = df.head(4000).reset_index(drop=True)
+  tfidf = TfidfVectorizer(stop_words="english", max_features=1000)
   matrix = tfidf.fit_transform(df["combined_tags"])
   sim = cosine_similarity(matrix).astype(np.float32)
   return df, sim
