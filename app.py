@@ -371,14 +371,19 @@ def load_data_and_model():
   except FileNotFoundError:
     pass
 
-  df = pd.concat(frames, ignore_index=True)
-  df = df[df["title"] != ""].drop_duplicates(subset=["title"], keep="first")
-  df = df.reset_index(drop=True)
+##  code change kiya h 
+  if not frames:
+    st.error("Dataset files load nahi ho paayin.")
+    st.stop()
 
-  tfidf = TfidfVectorizer(stop_words="english", max_features=5000)
-  matrix = tfidf.fit_transform(df["combined_tags"])
-  sim = cosine_similarity(matrix)
-  return df, sim
+    df = pd.concat(frames, ignore_index=True)
+    df = df[df["title"] != ""].drop_duplicates(subset=["title"], keep="first")
+    df = df.reset_index(drop=True)
+
+    tfidf = TfidfVectorizer(stop_words="english", max_features=2000, dtype=np.float32)
+    matrix = tfidf.fit_transform(df["combined_tags"])
+    sim = cosine_similarity(matrix).astype(np.float32)
+    return df, sim
 
 
 movies, similarity = load_data_and_model()
