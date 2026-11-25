@@ -372,18 +372,21 @@ def load_data_and_model():
     pass
 
 ##  code change kiya h 
-  if not frames:
-    st.error("Dataset files load nahi ho paayin.")
-    st.stop()
+  df = pd.concat(frames, ignore_index=True)
+  df["title"] = df["title"].fillna("").astype(str).str.strip()
+  df = df[df["title"] != ""].drop_duplicates(subset=["title"], keep="first").reset_index(drop=True)
 
-    df = pd.concat(frames, ignore_index=True)
-    df = df[df["title"] != ""].drop_duplicates(subset=["title"], keep="first")
-    df = df.reset_index(drop=True)
+  if "combined_tags" not in df.columns:
+    df["combined_tags"] = df["title"]
+  df["combined_tags"] = df["combined_tags"].fillna("").astype(str)
 
-    tfidf = TfidfVectorizer(stop_words="english", max_features=2000, dtype=np.float32)
-    matrix = tfidf.fit_transform(df["combined_tags"])
-    sim = cosine_similarity(matrix).astype(np.float32)
-    return df, sim
+  if df.empty:
+    return df, np.zeros((0, 0), dtype=np.float32)
+
+  tfidf = TfidfVectorizer(stop_words="english", max_features=2000)
+  matrix = tfidf.fit_transform(df["combined_tags"])
+  sim = cosine_similarity(matrix).astype(np.float32)
+  return df, sim
 
 
 movies, similarity = load_data_and_model()
